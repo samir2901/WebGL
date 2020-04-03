@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal</title>
+</head>
+<body>
+    <div id="navbar"><center>Thanos Portal</center></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+    <script>
+        var scene, sceneLight, renderer, cam, clock, portalLight, particles = [];
+
+        function initScene(){
+            scene = new THREE.Scene();
+            sceneLight = new THREE.DirectionalLight(0xffffff,0.5);
+            sceneLight.position.set(0,0,1);
+            scene.add(sceneLight);
+            
+            portalLight = new THREE.PointLight(0x062d89,4 * Math.PI,550,1.7);
+            portalLight.position.set(0,0,250);
+            scene.add(portalLight);
+
+
+            cam = new THREE.PerspectiveCamera(80,window.innerWidth/window.innerHeight,1,10000);
+            cam.position.z = 1000;
+            scene.add(cam);
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(0x000000,1);
+            renderer.setSize(window.innerWidth,window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            particleSetup();
+        }
+
+
+        function particleSetup(){
+            var texLoader = new THREE.TextureLoader();
+            texLoader.load("smoke.png", function(texture){
+                portalGeometry = new THREE.PlaneBufferGeometry(350,350);
+                portalMaterial = new THREE.MeshStandardMaterial({
+                    map : texture,
+                    transparent : true
+                })
+                for (let p = 880; p > 250; p--) {
+                    let particle = new THREE.Mesh(portalGeometry,portalMaterial);
+                    particle.position.set(
+                        0.5 * p * Math.cos((4 * p * Math.PI)/180),
+                        0.5 * p * Math.sin((4 * p * Math.PI)/180),
+                        0.1 * p
+                    );
+                    particle.rotation.z = Math.random() * 360;
+                    particles.push(particle)
+                    scene.add(particle);                        
+                }               
+                clock = new THREE.Clock();
+                animate();
+                renderer.render(scene,cam);
+            });
+        }
+
+        function animate(){
+            let delta = clock.getDelta();
+            particles.forEach(p =>{
+                p.rotation.z -= delta * 1.5;
+            });
+            if(Math.random() > 0.9){
+                portalLight.power = 350 + Math.random() * 500;
+            }
+            renderer.render(scene,cam);
+            requestAnimationFrame(animate);
+        }
+
+        initScene();
+    </script>
+</body>
+</html>
